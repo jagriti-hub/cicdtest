@@ -1,0 +1,18 @@
+version: 0.1
+phases:
+  pre_build:
+    commands:
+      - echo ecr login
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 280111790906.dkr.ecr.us-east-1.amazonaws.com
+  build:
+    commands:
+      - echo build and tag image
+      - docker build -t sample ./sample/
+      - docker tag sample:latest 280111790906.dkr.ecr.us-east-1.amazonaws.com/sample:latest
+  post_build:
+    commands:
+      - echo push image
+      - docker push 280111790906.dkr.ecr.us-east-1.amazonaws.com/sample:latest
+      - echo "$SSH_KEY" > ~/.ssh/id_rsa
+      - chmod 400 ~/.ssh/id_rsa
+      - ssh -o StrictHostKeyChecking=no ubuntu@ec2-3-238-227-0.compute-1.amazonaws.com "/home/ubuntu/deploy.sh"
